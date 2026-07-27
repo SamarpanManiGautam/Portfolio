@@ -635,6 +635,18 @@ a.card-media:hover img{ transform:scale(1.035); }
   transition:transform .25s ease;
 }
 .cert-media:hover img{ transform:scale(1.035); }
+
+/* Modifier for portrait/tall certificates (e.g. the patent design
+   certificate) where cover-cropping would hide the seal or
+   signature — show the full certificate instead. */
+.cert-media-tall{
+  aspect-ratio:3/4;
+}
+.cert-media-tall img{
+  object-fit:contain;
+  object-position:center;
+}
+
 .cert-body{ padding:0 8px; }
 .cert-title{
   font-family:var(--font-display);
