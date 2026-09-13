@@ -1410,7 +1410,7 @@ a.card-media:hover img{ transform:scale(1.03); }
             with drift-flux equations by night.
           </p>
           <div class="hero-actions">
-            <a href="Assets/Documents/CV_Samarpan.pdf" class="btn btn-primary" download>
+            <a href="Assets/Documents/CV_Samarpan.pdf" class="btn btn-primary" download onclick="trackCVDownload()">
               <span>Download CV</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v9M4.5 7l3.5 3.5L11.5 7M2.5 13.5h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
@@ -1845,7 +1845,7 @@ a.card-media:hover img{ transform:scale(1.03); }
       <div class="section-head">
         <p class="eyebrow">Background</p>
         <h2 class="section-title">The short version</h2>
-        <a href="Assets/Documents/CV_Samarpan.pdf" class="btn btn-secondary btn-small" download>
+        <a href="Assets/Documents/CV_Samarpan.pdf" class="btn btn-secondary btn-small" download onclick="trackCVDownload()">
           <span>Full CV, PDF</span>
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1.5v9M4.5 7l3.5 3.5L11.5 7M2.5 13.5h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -2052,6 +2052,61 @@ a.card-media:hover img{ transform:scale(1.03); }
 </footer>
 
 <script src="Assets/JS/script.js"></script>
+
+<!-- ============ CV DOWNLOAD NOTIFICATION ============ -->
+<!-- Uses EmailJS (free, no backend needed) to email you when someone downloads your CV,
+     including their approximate location (from IP). Fill in your own keys below. -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  (function(){
+    // ---- 1) Fill these in after creating a free account at https://www.emailjs.com ----
+    var EMAILJS_PUBLIC_KEY  = "GlgVYRSOKnPgG8QlG";   // Account > General
+    var EMAILJS_SERVICE_ID  = "Website_Email_Alert";   // Email Services
+    var EMAILJS_TEMPLATE_ID = "Website_Email_Alert_ID";  // Email Templates
+    // -----------------------------------------------------------------------------------
+
+    if (window.emailjs && EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
+      emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+    }
+
+    window.trackCVDownload = function () {
+      // Don't block the actual download; this runs alongside it.
+      fetch("https://ipapi.co/json/")
+        .then(function (res) { return res.json(); })
+        .then(function (geo) {
+          sendNotification({
+            city: geo.city || "Unknown",
+            region: geo.region || "Unknown",
+            country: geo.country_name || "Unknown",
+            ip: geo.ip || "Unknown"
+          });
+        })
+        .catch(function () {
+          // Geolocation lookup failed — still notify, just without location detail.
+          sendNotification({ city: "Unknown", region: "Unknown", country: "Unknown", ip: "Unknown" });
+        });
+    };
+
+    function sendNotification(geo) {
+      if (!window.emailjs || EMAILJS_PUBLIC_KEY === "YOUR_PUBLIC_KEY") {
+        console.warn("CV download tracked but EmailJS is not configured yet.", geo);
+        return;
+      }
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        city: geo.city,
+        region: geo.region,
+        country: geo.country,
+        ip_address: geo.ip,
+        page_url: window.location.href,
+        time: new Date().toLocaleString(),
+        user_agent: navigator.userAgent
+      }).catch(function (err) {
+        console.error("CV download notification failed to send:", err);
+      });
+    }
+  })();
+</script>
+
 <script>
   function openCertLightbox(evt, src, caption){
     evt.preventDefault();
